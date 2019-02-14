@@ -2,11 +2,9 @@ const puppeteer = require('puppeteer');
 
 (async () => {
     // EMAIL
-    const EMAIL_LOGIN = '[EMAIL]';
+    const EMAIL_LOGIN = 'elbaz.soufiane92@gmail.com';
     // EMAIL PASSWORD
-    const EMAIL_PASSWORD = '[PASSWORD]';
-    // Project name
-    const PROJECT_NAME = '[PROJECT_NAME]';
+    const EMAIL_PASSWORD = 'azerty123@';
 
     try {
 
@@ -57,28 +55,30 @@ const puppeteer = require('puppeteer');
             timeout: 60000
         });
 
-				await page.waitFor(2500);
+        await page.waitFor(2500);
 
         // Check if the chosen project name is available
-        const projects = await page.$$(`#firebase-projects > div > project-card > div > md-card > div.c5e-project-card-project-name`);
+        await page.evaluate(() => {
+            // Project name
+            const PROJECT_NAME = 'Atos-facteo';
+            // We are trying to query all the available projects for the given account
+            let project_cards = Array.from(document.querySelectorAll(`#firebase-projects > div > project-card > div > md-card > div.c5e-project-card-project-name`));
+            console.log(`You've got (${project_cards.count}) projects linked to your account.`);
+            // Now that we have all the available projects, we should search for our desired project
+            project_cards = project_cards.filter(project_card => project_card.innerText === PROJECT_NAME);
+            if (project_cards.length > 0) {
+                project_cards[0].click()
+            } else {
+                throw `The given project name ${PROJECT_NAME} was not found, please verify that you provided the correct name and retry.`;
+            }
+        });
 
-				console.log(projects.length);
+        // I will need it for sure ...
+        // Array.from(document.querySelectorAll(`#menu_container_297 > md-menu-content > div.layout-align-stretch-stretch.layout-row > div.menu-presets > md-menu-item > button`))[4].click()
 
-				console.log(JSON.stringify(projects));
-
-			  if (projects.count <= 0) {
-						throw `There is no project linked to your account.`;
-				}
-
-				console.log(`You've got ${projects.count} projects linked to your account.`);
-
-				console.log(`Trying to target the desired project [${PROJECT_NAME}]`);
-
-				// console.log(projects[0].innerText);
-
-        // await page.screenshot({
-        //    path: 'google_auth.png'
-        // });
+        await page.screenshot({
+            path: 'google_auth.png'
+        });
 
         await browser.close();
 
