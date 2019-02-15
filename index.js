@@ -10,6 +10,8 @@ const puppeteer = require('puppeteer');
 
     const page = await browser.newPage();
 
+    await page.setViewport({ width: 1280, height: 800 })
+
     // Accessing the firebase console 
     await page.goto('http://console.firebase.google.com/', {
         waitUntil: 'networkidle2'
@@ -45,8 +47,45 @@ const puppeteer = require('puppeteer');
         }
     });
 
-    // I will need it for sure ...
-    // Array.from(document.querySelectorAll(`#menu_container_297 > md-menu-content > div.layout-align-stretch-stretch.layout-row > div.menu-presets > md-menu-item > button`))[4].click()
+    await page.waitForSelector(`#nav-stability-tree-content > fb-navbar-item:nth-child(1) > a`);
+
+    await page.evaluate(() => {
+        const crashlytics_menu_item = document.querySelector(`#nav-stability-tree-content > fb-navbar-item:nth-child(1) > a`);
+        crashlytics_menu_item.click();
+    });
+
+    await page.waitForSelector(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
+
+    await page.click(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
+
+    await page.waitForSelector(`div > div > div > button.resource-selector-option > div > span`);
+
+    await page.evaluate(() => {
+
+        const available_applications = Array.from(document.querySelectorAll(`div > div > div > button.resource-selector-option > div > span`));
+
+        // Available crashlytics ranges
+        const SIXTY_MINUTES = 0;
+        const TWENTY_FOUR_HOURS = 1;
+        const SEVEN_DAYS = 2;
+        const THIRTY_DAYS = 3;
+        const NINETY_DAYS = 4;
+
+        // Simulated default range
+        const DEFAULT_RANGE = NINETY_DAYS;
+
+        for(let [index, available_application] of available_applications) {
+            console.log(`- ${index + 1}: ${available_application.innerText}`);
+            available_application.click();
+            // We are gathering all the possible ranges from the DOM
+            const time_filters = Array.from(document.querySelectorAll(`md-menu-content > div.layout-align-stretch-stretch.layout-row > div.menu-presets > md-menu-item > button > div > span`));
+            // Triggering an event click on the targeted range
+            time_filters[DEFAULT_RANGE].click();
+        }
+
+    });
+
+    // await page.waitForSelector(`#main > ng-transclude > div > div > div > c9s-issues > c9s-issues-index > div > div > div > c9s-issues-metrics > div > mat-card.top-issues-container.mat-card > div.metrics-card-title`);
 
     await page.screenshot({
         path: 'google_auth.png'
