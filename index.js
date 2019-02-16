@@ -22,14 +22,9 @@ const puppeteer = require('puppeteer');
 
     google_authentication.signin();
 
-    // Wait for the redirection to firebase to be done ;)
-    await page.waitFor(2500);
-
     await page.waitForSelector(`#firebase-projects > div:nth-child(3) > project-card:nth-child(2) > div > md-card > div.c5e-project-card-project-name`, {
         timeout: 60000
     });
-
-    await page.waitFor(2500);
 
     // Check if the chosen project name is available
     await page.evaluate(() => {
@@ -60,36 +55,34 @@ const puppeteer = require('puppeteer');
 
     await page.waitForSelector(`div > div > div > button.resource-selector-option > div > span`);
 
-    await page.evaluate(() => {
-
-        const available_applications = Array.from(document.querySelectorAll(`div > div > div > button.resource-selector-option > div > span`));
-
-        // Available crashlytics ranges
-        const SIXTY_MINUTES = 0;
-        const TWENTY_FOUR_HOURS = 1;
-        const SEVEN_DAYS = 2;
-        const THIRTY_DAYS = 3;
-        const NINETY_DAYS = 4;
-
-        // Simulated default range
-        const DEFAULT_RANGE = NINETY_DAYS;
-
-        for(let [index, available_application] of available_applications) {
-            console.log(`- ${index + 1}: ${available_application.innerText}`);
-            available_application.click();
-            // We are gathering all the possible ranges from the DOM
-            const time_filters = Array.from(document.querySelectorAll(`md-menu-content > div.layout-align-stretch-stretch.layout-row > div.menu-presets > md-menu-item > button > div > span`));
-            // Triggering an event click on the targeted range
-            time_filters[DEFAULT_RANGE].click();
-        }
-
+    const nb_available_applications = await page.evaluate(() => {
+        return Array.from(document.querySelectorAll(`div > div > div > button.resource-selector-option > div > span`)).length;
     });
+
+    for (i = 1; i <= nb_available_applications; i++) {
+        await page.waitForSelector(`div > div > div > button.resource-selector-option:nth-child(${i}) > div > span`);
+        const application_name = await page.evaluate((i) => {
+            return document.querySelector(`div > div > div > button.resource-selector-option:nth-child(${i}) > div > span`).innerText;
+        }, i);
+        await page.evaluate((i) => {
+            document.querySelector(`div > div > div > button.resource-selector-option:nth-child(${i}) > div > span`).click()
+        }, i);
+        console.log(`Getting ${application_name}'s related data ...`);
+        await page.waitForSelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`);
+        await page.waitFor(1500);
+        const application_nb_crashes = await page.evaluate(() => {
+            return document.querySelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`).innerText;
+        });
+        console.log(`[nb_crashes=${application_nb_crashes}]`);
+        await page.waitForSelector(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
+        await page.click(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
+        await page.waitForSelector(`div > div > div > button.resource-selector-option > div > span`);
+        await page.waitFor(1500);
+    }
 
     // await page.waitForSelector(`#main > ng-transclude > div > div > div > c9s-issues > c9s-issues-index > div > div > div > c9s-issues-metrics > div > mat-card.top-issues-container.mat-card > div.metrics-card-title`);
 
-    await page.screenshot({
-        path: 'google_auth.png'
-    });
+    await page.screenshot({ path: 'google_auth.png' });
 
     await browser.close();
 

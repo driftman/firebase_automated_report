@@ -23,30 +23,36 @@ class GoogleAuthentication {
             await this.page.waitForSelector(`#identifierId`);
             await this.page.waitForSelector(`#identifierNext`);
 
+            console.log(`Typing email ...`);
+
             // Typing email
             await this.page.type(`#identifierId`, email);
 
             // Going to the next page
             await this.page.click('#identifierNext');
 
-            await this.page.waitFor(1500);
+            // Waiting for the transition to be finished
+            await this.page.waitFor(2000);
 
             // Waiting for password form elements
-            await this.page.waitForSelector(`input[type="password"]`);
+            await this.page.waitForSelector(`#password > div > div > div > input`);
+            await this.page.waitForSelector('#passwordNext');
 
             console.log(`Typing password ...`);
 
             // Typing password
-            await this.page.type(`input[type="password"]`, password);
+            await this.page.type(`#password > div > div > div > input`, password);
 
-            console.log(`Password typed !`);
+            // Waiting for the password to be filled in
+            await this.page.waitForSelector(`#password > div > div > div > input`, { value: password });
 
             console.log(`Now clicking on button next`);
 
             // Validating our credentials
             await this.page.click('#passwordNext');
 
-            console.log(`Button next clicked !`);
+            // Waiting for the transition to be finished
+            await this.page.waitForNavigation();
         })();
     }
 }
