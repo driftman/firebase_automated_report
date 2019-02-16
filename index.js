@@ -30,7 +30,7 @@ const program = require('commander');
     if (program.password) console.log(`Password: ${program.password}`);
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox', '--disable-popup-blocking'],
     });
 
