@@ -1,23 +1,14 @@
 "use strict";
 
-const scrapping_utils = require('./utils');
-
 class GoogleAuthentication {
 
-    constructor(page) {
+    constructor(page, email, password) {
         this.page = page;
-        this.utils = new scrapping_utils();
+        this.email = email;
+        this.password = password;
     }
 
     signin() {
-        // Check if the user provided the Google Auth credentials
-        let email, password;
-        [email, password] = this.utils.getGoogleAuthCredentials();
-
-        if (email == null || password == null) {
-            throw `Please provide your Google Auth credentials \n For example : node index.js [YOUR EMAIL] [YOUR PASSWORD]`;
-        }
-
         (async () => {
             // Waiting for email form elements
             await this.page.waitForSelector(`#identifierId`);
@@ -26,7 +17,7 @@ class GoogleAuthentication {
             console.log(`Typing email ...`);
 
             // Typing email
-            await this.page.type(`#identifierId`, email);
+            await this.page.type(`#identifierId`, this.email);
 
             // Going to the next page
             await this.page.click('#identifierNext');
@@ -41,10 +32,10 @@ class GoogleAuthentication {
             console.log(`Typing password ...`);
 
             // Typing password
-            await this.page.type(`#password > div > div > div > input`, password);
+            await this.page.type(`#password > div > div > div > input`, this.password);
 
             // Waiting for the password to be filled in
-            await this.page.waitForSelector(`#password > div > div > div > input`, { value: password });
+            await this.page.waitForSelector(`#password > div > div > div > input`, { value: this.password });
 
             console.log(`Now clicking on button next`);
 

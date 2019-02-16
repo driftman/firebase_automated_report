@@ -1,7 +1,33 @@
-const google_automated_auth = require('./google_auth');
-const puppeteer = require('puppeteer');
+const google_automated_auth = require("./google_auth");
+const puppeteer = require("puppeteer");
+const program = require('commander');
 
 (async () => {
+
+    program.on('--help', function(){
+        console.log('')
+        console.log('Example:');
+        console.log('  $ node index -e john@doe.com -p 123456');
+    });
+
+    program
+    .version('1.0.0', '-v --version')
+    .option('-e, --email [email]', 'email')
+    .option('-p, --password [password]', 'password')
+    .parse(process.argv);
+
+    if (program.email == null || program.password == null) {
+        console.error(`In order to correctly run the script you should provide your [email] and [password], type --help for more informations.`);
+        return 0;
+    }
+
+    const email = program.email;
+    const password = program.password;
+
+    // All the informations were provided
+    console.log('You runned the script with :');
+    if (program.email) console.log(`Email: ${program.email}`);
+    if (program.password) console.log(`Password: ${program.password}`);
 
     const browser = await puppeteer.launch({
         headless: false,
@@ -18,7 +44,7 @@ const puppeteer = require('puppeteer');
     });
 
     // Using the google authentication module
-    const google_authentication = new google_automated_auth(page);
+    const google_authentication = new google_automated_auth(page, email, password);
 
     google_authentication.signin();
 
@@ -68,16 +94,26 @@ const puppeteer = require('puppeteer');
             document.querySelector(`div > div > div > button.resource-selector-option:nth-child(${i}) > div > span`).click()
         }, i);
         console.log(`Getting ${application_name}'s related data ...`);
-        await page.waitForSelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`);
-        await page.waitFor(1500);
-        const application_nb_crashes = await page.evaluate(() => {
-            return document.querySelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`).innerText;
-        });
-        console.log(`[nb_crashes=${application_nb_crashes}]`);
-        await page.waitForSelector(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
+        let app_not_in_zero_state = true;
+        // Checking wether the app is in zero state
+        try {
+            await page.waitForSelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`);
+        } catch (e) {
+            app_not_in_zero_state = false;
+        }
+        if (app_not_in_zero_state) {
+            // Now that the app isn't in zero state
+            // We should wait for the panel responsible for showing the app crashes infos
+            await page.waitFor(2000);
+            const application_nb_crashes = await page.evaluate(() => {
+                return document.querySelector(`div > fire-stat.stat.crashes > div > div.value-wrapper.ng-star-inserted > span`).innerText;
+            });
+            console.log(`[nb_crashes=${application_nb_crashes}]`);
+        } else {
+            console.log(`[nb_crashes=0]`)
+        }
         await page.click(`#main > ng-transclude > fb-feature-bar > div > div > div.fb-featurebar-app-selector-container.fb-featurebar-space-consumer > div > fb-resource-selector > div > div > div.selected-resource > span`);
         await page.waitForSelector(`div > div > div > button.resource-selector-option > div > span`);
-        await page.waitFor(1500);
     }
 
     // await page.waitForSelector(`#main > ng-transclude > div > div > div > c9s-issues > c9s-issues-index > div > div > div > c9s-issues-metrics > div > mat-card.top-issues-container.mat-card > div.metrics-card-title`);
