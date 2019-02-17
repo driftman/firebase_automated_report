@@ -1,3 +1,0 @@
-Typing password ...
-Password typed !
-Now clicking on button next
