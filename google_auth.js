@@ -8,44 +8,49 @@ class GoogleAuthentication {
         this.password = password;
     }
 
-    signin() {
-        (async () => {
-            // await this.page.screenshot({ path: 'google_auth.png' });
-            // Waiting for email form elements
-            await this.page.waitForSelector(`#Email`);
-            await this.page.waitForSelector(`#next`);
+    async signin() {
+        // #Email in headless chrome
+        const email_field_selector = `#identifierId`;
+        // #next in headless chrome
+        const button_next_selector = '#identifierNext';
+        // #Passwd in headless chrome
+        const password_field_selector = `#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input`;
+        // #signIn in headless chrome
+        const signin_selector = `#passwordNext`;
 
-            console.log(`Typing email ...`);
+        // Waiting for email form elements
+        await this.page.waitForSelector(email_field_selector);
+        await this.page.waitForSelector(button_next_selector);
 
-            // Typing email
-            await this.page.type(`#Email`, this.email);
+        console.log(`Typing email ...`);
 
-            // Going to the next page
-            await this.page.click('#next');
+        // Typing email
+        await this.page.type(email_field_selector, this.email);
 
-            // Waiting for the transition to be finished
-            await this.page.waitFor(2000);
+        // Going to the next page
+        await this.page.click(button_next_selector);
 
-            // Waiting for password form elements
-            await this.page.waitForSelector(`#Passwd`);
-            await this.page.waitForSelector('#signIn');
+        await this.page.waitFor(2000);
 
-            console.log(`Typing password ...`);
+        // Waiting for password form elements
+        await this.page.waitForSelector(password_field_selector);
+        await this.page.waitForSelector(signin_selector);
 
-            // Typing password
-            await this.page.type(`#Passwd`, this.password);
+        console.log(`Typing password ...`);
 
-            // Waiting for the password to be filled in
-            await this.page.waitForSelector(`#Passwd`, { value: this.password });
+        // Typing password
+        await this.page.type(password_field_selector, this.password);
 
-            console.log(`Now clicking on button next`);
+        // Waiting for the password to be filled in
+        await this.page.waitForSelector(password_field_selector, { value: this.password });
 
-            // Validating our credentials
-            await this.page.click('#signIn');
+        console.log(`Now clicking on button next`);
 
-            // Waiting for the transition to be finished
-            await this.page.waitForNavigation();
-        })();
+        // Validating our credentials
+        await this.page.click(signin_selector);
+
+        // Waiting for the transition to be finished
+        await this.page.waitForNavigation();
     }
 }
 

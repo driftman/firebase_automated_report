@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm install && node ./index.js -e remise3slogs@gmail.com -p remise3sWP10"
+    "start": "npm install && node ./index.js -e elbaz.soufiane92@gmail.com -p Azerty+123"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "commander": "^2.19.0",
+    "nodemailer": "^5.1.1",
     "puppeteer": "^1.12.2"
   }
 }
