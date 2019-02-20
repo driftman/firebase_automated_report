@@ -12,7 +12,7 @@ const nodemailer = require("nodemailer");
     program.on('--help', function(){
         console.log('')
         console.log('Example:');
-        console.log('  $ node index --email john@doe.com --password 123456 --project MY-PROJECT');
+        console.log('  $ node index --email john@company.com --password 123456 --project MY-PROJECT --recipients jane@company.com, jack@company.com');
     });
 
     program
@@ -20,10 +20,12 @@ const nodemailer = require("nodemailer");
     .option('-email, --email [email]', 'email')
     .option('-password, --password [password]', 'password')
     .option('-project, --project [project]', 'project')
+    .option('-recipients, --recipients [recipients]', 'recipients')
     .parse(process.argv);
 
-    if (program.email == null || program.password == null || program.project == null) {
-        console.error(`In order to correctly run the script you should provide your [email], [password] and [project], type --help for more informations.`);
+    if (program.email == null || program.password == null ||
+      program.project == null || program.recipients == null) {
+        console.error(`In order to correctly run the script you should provide your [email], [password], [project] and [recipients], type --help for more informations.`);
         return 0;
     }
 
@@ -39,7 +41,7 @@ const nodemailer = require("nodemailer");
     // We launch our browser with the headless option which means no GUI as our script is a CLI one
     const browser = await puppeteer.launch({
         args: ['--no-sandbox'],
-        headless: false
+        headless: true
     });
 
     // Initiating our google email client
@@ -57,7 +59,7 @@ const nodemailer = require("nodemailer");
 
     await page.setViewport({ width: 1280, height: 800 })
 
-    // Accessing the firebase console 
+    // Accessing the firebase console
     await page.goto('http://console.firebase.google.com/', {
         waitUntil: 'networkidle2'
     });
@@ -144,9 +146,8 @@ const nodemailer = require("nodemailer");
 
     const mailOptions = {
         from: program.from,
-        to: `${program.from}, soufiane.elbaz@atos.net, 
-        naim.jeddane@atos.net, zakaria.boukaddouss.external@atos.net, achraf.elayyachi@atos.net`, 
-        subject: `Rapport crashlytics du : ${launch_time}`, 
+        to: program.recipients,
+        subject: `[${program.project}][${launch_time}] - Rapport crashlytics.`,
         html: mail_body
     };
 
@@ -203,8 +204,8 @@ const nodemailer = require("nodemailer");
             </head>
             <body>
                 <header></header>
-                <table> 
-                    ${html_body_table_header} 
+                <table>
+                    ${html_body_table_header}
                     ${html_body_table_crash_report_rows}
                 </table>
             </body>
