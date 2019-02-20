@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm install && node ./index.js -e elbaz.soufiane92@gmail.com -p Azerty+123"
+    "start": "npm install && node ./index.js --email elbaz.soufiane92@gmail.com --password Azerty+123 --project SPECTREANDROID"
   },
   "keywords": [],
   "author": "",

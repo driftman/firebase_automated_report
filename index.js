@@ -12,17 +12,18 @@ const nodemailer = require("nodemailer");
     program.on('--help', function(){
         console.log('')
         console.log('Example:');
-        console.log('  $ node index -e john@doe.com -p 123456');
+        console.log('  $ node index --email john@doe.com --password 123456 --project MY-PROJECT');
     });
 
     program
     .version('1.0.0', '-v --version')
-    .option('-e, --email [email]', 'email')
-    .option('-p, --password [password]', 'password')
+    .option('-email, --email [email]', 'email')
+    .option('-password, --password [password]', 'password')
+    .option('-project, --project [project]', 'project')
     .parse(process.argv);
 
-    if (program.email == null || program.password == null) {
-        console.error(`In order to correctly run the script you should provide your [email] and [password], type --help for more informations.`);
+    if (program.email == null || program.password == null || program.project == null) {
+        console.error(`In order to correctly run the script you should provide your [email], [password] and [project], type --help for more informations.`);
         return 0;
     }
 
@@ -31,8 +32,9 @@ const nodemailer = require("nodemailer");
 
     // All the informations were provided
     console.log('You runned the script with :');
-    if (program.email) console.log(`Email: ${program.email}`);
-    if (program.password) console.log(`Password: ${program.password}`);
+    console.log(`Email: ${program.email}`);
+    console.log(`Password: ${program.password}`);
+    console.log(`Project name: ${program.project}`);
 
     // We launch our browser with the headless option which means no GUI as our script is a CLI one
     const browser = await puppeteer.launch({
@@ -70,20 +72,18 @@ const nodemailer = require("nodemailer");
     await page.waitForSelector(`#firebase-projects > div:nth-child(3) > project-card:nth-child(2) > div > md-card > div.c5e-project-card-project-name`, { timeout: 60000 });
 
     // Check if the chosen project name is available
-    await page.evaluate(() => {
-        // Project name
-        const PROJECT_NAME = 'Atos-facteo';
+    await page.evaluate((program) => {
         // We are trying to query all the available projects for the given account
         let project_cards = Array.from(document.querySelectorAll(`#firebase-projects > div > project-card > div > md-card > div.c5e-project-card-project-name`));
         console.log(`You've got (${project_cards.count}) projects linked to your account.`);
         // Now that we have all the available projects, we should search for our desired project
-        project_cards = project_cards.filter(project_card => project_card.innerText === PROJECT_NAME);
+        project_cards = project_cards.filter(project_card => project_card.innerText === program.project);
         if (project_cards.length > 0) {
             project_cards[0].click()
         } else {
-            throw `The given project name ${PROJECT_NAME} was not found, please verify that you provided the correct name and retry.`;
+            throw `The given project name ${program.project} was not found, please verify that you provided the correct name and retry.`;
         }
-    });
+    }, program);
 
     // Waiting for crashlytics menu button to show up
     await page.waitForSelector(`#nav-stability-tree-content > fb-navbar-item:nth-child(1) > a`);
@@ -144,7 +144,8 @@ const nodemailer = require("nodemailer");
 
     const mailOptions = {
         from: program.from,
-        to: `${program.from}, elbaz.soufiane92@gmail.com`, 
+        to: `${program.from}, soufiane.elbaz@atos.net, 
+        naim.jeddane@atos.net, zakaria.boukaddouss.external@atos.net, achraf.elayyachi@atos.net`, 
         subject: `Rapport crashlytics du : ${launch_time}`, 
         html: mail_body
     };
