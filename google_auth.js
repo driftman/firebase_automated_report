@@ -10,13 +10,17 @@ class GoogleAuthentication {
 
     async signin() {
         // #Email in headless chrome
-        const email_field_selector = `#identifierId`;
+        // const email_field_selector = `#identifierId`;
+        const email_field_selector = `#Email`;
         // #next in headless chrome
-        const button_next_selector = '#identifierNext';
+        // const button_next_selector = '#identifierNext';
+        const button_next_selector = `#next`;
         // #Passwd in headless chrome
-        const password_field_selector = `#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input`;
+        // const password_field_selector = `#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input`;
+        const password_field_selector = `#Passwd`;
         // #signIn in headless chrome
-        const signin_selector = `#passwordNext`;
+        // const signin_selector = `#passwordNext`;
+        const signin_selector = `#signIn`;
 
         // Waiting for email form elements
         await this.page.waitForSelector(email_field_selector);
